@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: php-pvc
+  labels:
+    name: dev
+spec:
+  accessModes:
+   - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: php
+  labels:
+    env: testing
+    region: IN
+spec:
+  containers:
+  - name: myweb-con
+    image: httpd
+    volumeMounts:
+      - name: web-vol1
+        mountPath: /usr/local/apache2/htdocs/
+  volumes:
+  - name: web-vol1
+    persistentVolumeClaim:
+      claimName: php-pvc
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service-php
+  labels:
+    app: myweb-service
+spec:
+  selector:
+    env: testing
+  type: NodePort
+  ports:
+    - nodePort: 31001
+      port: 80
+      targetPort: 80
